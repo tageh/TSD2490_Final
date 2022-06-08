@@ -1,0 +1,75 @@
+﻿@page "/observasjoner"
+@using Gruppe11.Data
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@*
+    Using OwningComponentBase ensures that the service and related services
+    that share its scope are disposed with the component.
+    Otherwise DbContext in ForecastService will live for the life of the
+    connection, which may be problematic if clients stay
+    connected for a long time.
+    We access WeatherForecastService using @Service
+*@
+@inherits OwningComponentBase<ObservasjonService>
+<h3>Observasjoner</h3>
+<!-- AuthorizeView allows us to only show sections of the page -->
+<!-- based on the security on the current user -->
+<AuthorizeView>
+    <!-- Show this section if the user is logged in -->
+    <Authorized>
+        <h4>Hello, @context.User.Identity?.Name!</h4>
+        @if (forecasts == null)
+        {
+            <!-- Show this if the current user has no data... yet... -->
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <!-- Show the forecasts for the current user -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Dato</th>
+                        <th>Temp. (C)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var forecast in forecasts)
+                    {
+                        <tr>
+                            <td>@forecast.Dato?.ToString()</td>
+                            <td>@forecast.Temperatur</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <!-- Show this section if the user is not logged in -->
+    <NotAuthorized>
+        <p>You're not signed in.</p>
+    </NotAuthorized>
+</AuthorizeView>
+@code 
+{
+     // AuthenticationState is available as a CascadingParameter
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<Observasjon> forecasts = new List<Observasjon>();
+    private string UserIdentityName = "";
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+        // Get the forecasts for the current user
+        // We access WeatherForecastService using @Service
+        forecasts = await @Service.GetForecastAsync(UserIdentityName);
+    }
+   
+}
