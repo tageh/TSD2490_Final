@@ -31,6 +31,7 @@
                         <th>Dato</th>
                         <th>Temp. (C)</th>
                         <th>Kommentar</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,6 +41,13 @@
                             <td>@forecast.Dato?.ToString()</td>
                             <td>@forecast.Temperatur</td>
                             <td>@forecast.Kommentar</td>
+                            <td>
+                                <!-- Edit the current forecast -->
+                                <button class="btn btn-primary"
+                                @onclick="(() => EditForecast(forecast))">
+                                Edit
+                                </button>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -59,7 +67,7 @@
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h3 class="modal-title">Edit Forecast</h3>
+                                <h3 class="modal-title">@tittel</h3>
                                 <!-- Button to close the popup -->
                                 <button type="button" class="close" @onclick="ClosePopup">
                                     <span aria-hidden="true">X</span>
@@ -74,6 +82,14 @@
                                 <button class="btn btn-success" @onclick="SaveForecast">
                                     Save
                                 </button>&nbsp;
+                                @if (objWeatherForecast.Id > 0)
+                                {                                    
+                                    <!-- Button to delete the forecast -->
+                                    <button class="btn btn-danger"
+                                    @onclick="DeleteForecast">
+                                    Delete
+                                </button>
+                                }
                              </div>
                         </div>
                     </div>
@@ -88,6 +104,7 @@
 </AuthorizeView>
 @code 
 {
+    string tittel = "";
     // AuthenticationState is available as a CascadingParameter
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
@@ -108,7 +125,7 @@
         // We access WeatherForecastService using @Service
         forecasts = await @Service.GetForecastAsync(UserIdentityName);
     }
-    
+
     VærMelding objWeatherForecast = new VærMelding();
     bool ShowPopup = false;
     void ClosePopup()
@@ -124,6 +141,7 @@
         objWeatherForecast.Id = 0;
         // Open the Popup
         ShowPopup = true;
+        tittel = "Add new Forcast";
     }
     async Task SaveForecast()
     {
@@ -136,17 +154,33 @@
             VærMelding objNewWeatherForecast = new VærMelding();
             objNewWeatherForecast.Dato = System.DateTime.Now;
             objNewWeatherForecast.Kommentar = objWeatherForecast.Kommentar;
-            objNewWeatherForecast.Temperatur =
-            Convert.ToInt32(objWeatherForecast.Temperatur);
+            objNewWeatherForecast.Temperatur = Convert.ToInt32(objWeatherForecast.Temperatur);
             objNewWeatherForecast.Bruker = UserIdentityName;
             // Save the result
             var result = @Service.CreateForecastAsync(objNewWeatherForecast);
         }
         else
         {
-            // This is an update
+            bool oppdatert = await @Service.UpdateForecastAsync(objWeatherForecast);
         }
         // Get the forecasts for the current user
         forecasts = await @Service.GetForecastAsync(UserIdentityName);
     }
+    void EditForecast(VærMelding værMelding)
+    {
+        objWeatherForecast = værMelding;
+        ShowPopup = true;
+        tittel = "Edit Forcast";
+    }
+
+    async Task DeleteForecast()
+    {
+        // Close the Popup
+        ShowPopup = false;
+        // Delete the forecast
+        var result = @Service.DeleteForecastAsync(objWeatherForecast);
+        // Get the forecasts for the current user
+        forecasts = await @Service.GetForecastAsync(UserIdentityName);
+    }
+
 }

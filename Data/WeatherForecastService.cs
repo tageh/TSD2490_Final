@@ -44,5 +44,40 @@ namespace Gruppe11.Data
             _context.SaveChanges();
             return Task.FromResult(objWeatherForecast);
         }
+
+        public Task<bool> UpdateForecastAsync(VærMelding objWeatherForecast)
+        {
+            var ExistingWeatherForecast = _context.VærMelding.Where(x => x.Id == objWeatherForecast.Id).FirstOrDefault();
+            if (ExistingWeatherForecast != null)
+            {
+                ExistingWeatherForecast.Dato = objWeatherForecast.Dato;
+                ExistingWeatherForecast.Kommentar = objWeatherForecast.Kommentar;
+                ExistingWeatherForecast.Temperatur = objWeatherForecast.Temperatur;
+                _context.SaveChanges();
+            }
+            else
+            {
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> DeleteForecastAsync(VærMelding objWeatherForecast)
+        {
+            var ExistingWeatherForecast =
+                _context.VærMelding
+                .Where(x => x.Id == objWeatherForecast.Id)
+                .FirstOrDefault();
+            if (ExistingWeatherForecast != null)
+            {
+                _context.VærMelding.Remove(ExistingWeatherForecast);
+                _context.SaveChanges();
+            }
+            else
+            {
+                return Task.FromResult(false);
+            }
+            return Task.FromResult(true);
+        }
     }
 }
