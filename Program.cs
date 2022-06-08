@@ -19,7 +19,15 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddScoped<WeatherForecastService>();
+builder.Services.AddSingleton<VærMelding>();
+// Read the connection string from the appsettings.json file
+// Set the database connection for the EndtoEndContext
+builder.Services.AddDbContext<Gruppe11.Data.Gruppe11Context>(options =>
+options.UseSqlServer(
+    builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 
 var app = builder.Build();
 
