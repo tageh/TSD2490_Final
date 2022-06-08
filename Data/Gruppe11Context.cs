@@ -17,11 +17,11 @@ namespace Gruppe11.Data
         {
         }
 
-        public virtual DbSet<VærData> VærData { get; set; }
-
+        public virtual DbSet<VærMelding> VærMelding { get; set; }
+      
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<VærData>(entity =>
+            modelBuilder.Entity<VærMelding>(entity =>
             {
                 entity.Property(e => e.Dato).HasColumnType("datetime");
 

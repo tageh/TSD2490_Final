@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Gruppe11.Data
 {
-    public partial class VærData
+    public partial class VærMelding
     {
         public int Id { get; set; }
         public DateTime? Dato { get; set; }
