@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Gruppe11.Data
 {
@@ -6,7 +8,7 @@ namespace Gruppe11.Data
     {
         public int Id { get; set; }
         public DateTime? Dato { get; set; }
-        public int? Temperatur { get; set; }
+        public double? Temperatur { get; set; }
         public string Bruker { get; set; }
     }
 }
