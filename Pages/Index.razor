@@ -1,9 +1,17 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
-
 <h1>Eksamen - TSD2490: Gruppe11</h1>
+<hr />
 
-Welcome to your new app .
+<h2><strong>Welcome to our weather app!</strong></h2>
+<br />
+<h5><span class="oi oi-list-rich"/> To register data manually, see the "fetch data"" page</h5>
+<h5><span class="oi oi-rain"/> To see automaticy featched data from the Frost API, see "Observasjoner" page</h5>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<AuthorizeView>
+    <NotAuthorized>
+        <div class="alert alert-primary">
+           <span class="oi oi-account-login"/> <strong>You have to log in to use these services</strong>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>

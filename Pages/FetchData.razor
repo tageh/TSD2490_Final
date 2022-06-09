@@ -1,22 +1,19 @@
 ﻿@page "/fetchdata"
 @using Gruppe11.Data
+@using Gruppe11.Models
+@using Gruppe11.Data.Services
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@*
-    Using OwningComponentBase ensures that the service and related services
-    that share its scope are disposed with the component.
-    Otherwise DbContext in ForecastService will live for the life of the
-    connection, which may be problematic if clients stay
-    connected for a long time.
-    We access WeatherForecastService using @Service
-*@
+
 @inherits OwningComponentBase<WeatherForecastService>
 <h1>Weather forecast</h1>
+<hr />
 <!-- AuthorizeView allows us to only show sections of the page -->
 <!-- based on the security on the current user -->
-<AuthorizeView>
+<AuthorizeView Context="AVcontext">
     <!-- Show this section if the user is logged in -->
-    <Authorized>
-        <h4>Hello, @context.User.Identity?.Name!</h4>
+    <Authorized >
+        <h3>Recorded by @AVcontext.User.Identity?.Name!</h3>
+        <br />
         @if (forecasts == null)
         {
             <!-- Show this if the current user has no data... yet... -->
@@ -38,7 +35,7 @@
                     @foreach (var forecast in forecasts)
                     {
                         <tr>
-                            <td>@forecast.Dato?.ToString()</td>
+                            <td>@forecast.Dato?.ToString("yyyy-MM-dd")</td>
                             <td>@forecast.Temperatur</td>
                             <td>@forecast.Kommentar</td>
                             <td>
@@ -75,17 +72,40 @@
                             </div>
                             <!-- Edit form for the current forecast -->
                             <div class="modal-body">
-                                <input class="form-control" type="text" placeholder="Celsius forecast" @bind="objWeatherForecast.Temperatur" />
-                                <input class="form-control" type="text" placeholder="Kommentar" @bind="objWeatherForecast.Kommentar" />
-                                <br />
-                                <!-- Button to save the forecast -->
-                                <button class="btn btn-success" @onclick="SaveForecast">
-                                    Save
-                                </button>&nbsp;
+                                <EditForm Model="objWeatherForecast" Context="Editcontext" OnValidSubmit="SaveForecast">
+                                    <DataAnnotationsValidator/>
+                                        <div class="form-group">
+                                            <label for="Beskrivelse">Temperatur</label>
+                                                <div>
+                                                    <InputNumber class="form-control"  @bind-Value="objWeatherForecast.Temperatur" id="Temperatur"></InputNumber>
+                                                    <ValidationMessage For="@(()=>objWeatherForecast.Temperatur)" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                            <label for="Beskrivelse">Kommentar</label>
+                                                <div>
+                                                    <InputText class="form-control" @bind-Value="objWeatherForecast.Kommentar" id="Kommentar"></InputText>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                            <label for="Beskrivelse">Dato</label>
+                                                <div>
+                                                    <InputDate class="form-control" @bind-Value="objWeatherForecast.Dato" id="Dato"></InputDate>
+                                                    <ValidationMessage For="@(()=>objWeatherForecast.Dato)" />
+                                                </div>
+                                            </div>
+
+                                         <div class="p-1">
+                                        <button class="btn btn-success" type="submit"> Save </button>&nbsp;
+                                        </div>
+                                        <br />
+                                 </EditForm>
+                                
+                                
                                 @if (objWeatherForecast.Id > 0)
                                 {                                    
                                     <!-- Button to delete the forecast -->
-                                    <button class="btn btn-danger"
+                                    <button type="submit" class="btn btn-danger"
                                     @onclick="DeleteForecast">
                                     Delete
                                 </button>
@@ -104,12 +124,15 @@
 </AuthorizeView>
 @code 
 {
-    string tittel = "";
     // AuthenticationState is available as a CascadingParameter
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    
     List<VærMelding> forecasts = new List<VærMelding>();
+
     private string UserIdentityName = "";
+    string tittel = "";
+
     protected override async Task OnInitializedAsync()
     {
         // Get the current user
@@ -147,12 +170,12 @@
     {
         // Close the Popup
         ShowPopup = false;
-        // A new forecast will have the Id set to 0
+        // A new forecast will have the Id set to 0 
         if (objWeatherForecast.Id == 0)
         {
             // Create new forecast
             VærMelding objNewWeatherForecast = new VærMelding();
-            objNewWeatherForecast.Dato = System.DateTime.Now;
+            objNewWeatherForecast.Dato = objWeatherForecast.Dato;
             objNewWeatherForecast.Kommentar = objWeatherForecast.Kommentar;
             objNewWeatherForecast.Temperatur = Convert.ToInt32(objWeatherForecast.Temperatur);
             objNewWeatherForecast.Bruker = UserIdentityName;

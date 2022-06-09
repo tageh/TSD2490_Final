@@ -1,4 +1,4 @@
-namespace Gruppe11.Data
+namespace Gruppe11.Models
 {
     public class WeatherForecast
     {
