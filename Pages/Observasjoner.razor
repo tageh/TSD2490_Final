@@ -1,39 +1,29 @@
-@page "/observasjoner"
-
-@using Gruppe11.Data;
-@using Models;
-@using System.Linq;
-@using System.Collections.Generic;
-@using System.Threading.Tasks;
-@using Microsoft.EntityFrameworkCore;
-@using System.Net.Http.Headers;
-@using Newtonsoft.Json;
+﻿@page "/observasjoner"
+@using Gruppe11.Data.Services
+@using Gruppe11.Models
+@using Newtonsoft.Json
 @using Newtonsoft.Json.Serialization;
-
-@inject IHttpClientFactory Factory
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@*
-    Using OwningComponentBase ensures that the service and related services
-    that share its scope are disposed with the component.
-    Otherwise DbContext in ForecastService will live for the life of the
-    connection, which may be problematic if clients stay
-    connected for a long time.
-    We access WeatherForecastService using @Service
-*@
 @inherits OwningComponentBase<ObservasjonService>
-<h3>Observasjoner</h3>
+@inject FrostAPIService FrostAPIService
+
+<h1>Observasjoner</h1>
+<hr />
 <!-- AuthorizeView allows us to only show sections of the page -->
 <!-- based on the security on the current user -->
 <AuthorizeView>
     <!-- Show this section if the user is logged in -->
     <Authorized>
-        <h4>Hello, @context.User.Identity?.Name!</h4>
-        <br />
-        <h3>Tempraturer den siste uken</h3>
-        @if (observasjoner == null)
+
+        <h3>Showing @antall records</h3>
+        <_FiltrerObservasjoner Filtrere="FiltrerObservasjoner" />
+
+        @if (lastetData == false)
         {
-            <!-- Show this if the current user has no data... yet... -->
-            <p><em>Loading...</em></p>
+            <div class="d-flex align-items-center">
+                <strong>Loading...</strong>
+                <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+            </div>
         }
         else
         {
@@ -42,58 +32,53 @@
                 <thead>
                     <tr>
                         <th>Dato</th>
-                        <th>Temp. (C)</th>
+                        <th>Temperatur (C)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var forecast in observasjoner)
+                    @foreach (var observasjon in observasjoner)
                     {
                         <tr>
-                            <td>@forecast.Dato?.ToString("yyyy-MM-dd")</td>
-                            <td>@forecast.Temperatur?.ToString("#.##")</td>
+                            <td>@observasjon.Dato?.ToString("yyyy-MM-dd")</td>
+                            <td>@observasjon.Temperatur?.ToString("#.##")</td>
                         </tr>
                     }
                 </tbody>
             </table>
         }
+
     </Authorized>
     <!-- Show this section if the user is not logged in -->
     <NotAuthorized>
         <p>You're not signed in.</p>
     </NotAuthorized>
 </AuthorizeView>
-@code 
+@code
 {
-    FrostAPI frostAPI = new FrostAPI();
-    // AuthenticationState is available as a CascadingParameter
-    [CascadingParameter]
-    private Task<AuthenticationState>? authenticationStateTask { get; set; }
     List<Observasjon> observasjoner = new List<Observasjon>();
-    private string UserIdentityName = "";
+    List<Observasjon> alleObservasjoner = new List<Observasjon>();
 
-    string sisteUken = DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd");
-
-    Observasjon objWeatherForecast = new Observasjon();
+    int antall = 0;
+    bool lastetData = false;
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine(sisteUken);
-        // Get the current user
-        if (authenticationStateTask != null)
-        {
-            var user = (await authenticationStateTask).User;
-            if (user.Identity != null)
-            {
-                UserIdentityName = user.Identity.Name ?? "";
-            }
-        }
-        // Get the forecasts for the current user
-        // We access WeatherForecastService using @Service
-        observasjoner = await @Service.GetForecastAsync(UserIdentityName);
+        observasjoner = await FrostAPIService.HentOvservasjoner();
 
-        //API
-        observasjoner = frostAPI.HentOvservasjoner(UserIdentityName.ToString()); 
+        await Service.CreateObservasjonerAsync(observasjoner);
 
+        alleObservasjoner = await Service.GetObservasjonAsync();
+
+        observasjoner = alleObservasjoner.OrderBy(o => o.Dato).TakeLast(7).ToList();
+        tellAntall();
+        lastetData = true;
     }
-   
+
+    public void FiltrerObservasjoner(DatoFilter datoFiler)
+    {
+        observasjoner = alleObservasjoner.Where(o => o.Dato >= datoFiler.FraDato && o.Dato <= datoFiler.TilDato).ToList();
+        tellAntall();
+    }
+
+    public void tellAntall() => antall = observasjoner.Count;
 }

@@ -4,34 +4,29 @@ using Gruppe11.Models;
 
 namespace Gruppe11.Data
 {
-    public partial class Gruppe11Context : DbContext
+    public partial class ObservasjonContext : DbContext
     {
-        public Gruppe11Context()
+        public ObservasjonContext()
         {
         }
 
-        public Gruppe11Context(DbContextOptions<Gruppe11Context> options)
+        public ObservasjonContext(DbContextOptions<ObservasjonContext> options)
             : base(options)
         {
         }
 
-        public virtual DbSet<VærMelding> VærMelding { get; set; }
+        public virtual DbSet<Observasjon> Observasjon { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<VærMelding>(entity =>
+            modelBuilder.Entity<Observasjon>(entity =>
             {
                 entity.Property(e => e.Dato).HasColumnType("datetime");
-
-                entity.Property(e => e.Kommentar).HasMaxLength(50);
-
-                entity.Property(e => e.Bruker).HasMaxLength(50);
             });
 
             OnModelCreatingPartial(modelBuilder);
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
-
     }
 }

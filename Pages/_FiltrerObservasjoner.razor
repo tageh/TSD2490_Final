@@ -1,0 +1,47 @@
+﻿@using Gruppe11.Models
+
+<br />
+
+<EditForm Model="datoFiler" Context="Editcontext" OnValidSubmit="DatoSatt">
+    <DataAnnotationsValidator />
+        <div class="row">
+            <div class="col-auto">
+                <div class="form-group">
+                    <label for="FraDato">Fra dato</label>
+                    <div>
+                        <InputDate class="form-control" @bind-Value="datoFiler.FraDato" id="FraDato" DisplayName="Til dato" ></InputDate>
+                        <ValidationMessage For="@(()=>datoFiler.FraDato)" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="form-group">
+                    <label for="FraDato">Til dato</label>
+                    <div>
+                        <InputDate class="form-control" @bind-Value="datoFiler.TilDato" id="TilDato"></InputDate>
+                        
+                        <ValidationMessage For="@(()=>datoFiler.TilDato)" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-auto">
+                <label for="testtest"> </label>
+                <div>
+                <button class="btn btn-success" id="testtest" type="submit"> Filtrer </button>
+                </div>
+            </div>
+        </div>
+    <br />
+</EditForm>
+
+@code {
+    DatoFilter datoFiler = new DatoFilter();
+
+    [Parameter]
+    public EventCallback<DatoFilter> Filtrere { get; set; }
+
+    public void DatoSatt()
+    {
+        Filtrere.InvokeAsync(datoFiler);
+    }
+}

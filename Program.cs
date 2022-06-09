@@ -1,11 +1,10 @@
 using Gruppe11.Areas.Identity;
 using Gruppe11.Data;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
+using Gruppe11.Models;
+using Gruppe11.Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,10 +19,20 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddScoped<WeatherForecastService>();
+builder.Services.AddScoped<ObservasjonService>();
+builder.Services.AddScoped<FrostAPIService>();
+
 builder.Services.AddSingleton<VærMelding>();
+builder.Services.AddSingleton<Observasjon>();
+//API Service
+builder.Services.AddHttpClient();
 // Read the connection string from the appsettings.json file
 // Set the database connection for the EndtoEndContext
 builder.Services.AddDbContext<Gruppe11.Data.Gruppe11Context>(options =>
+options.UseSqlServer(
+    builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDbContext<Gruppe11.Data.ObservasjonContext>(options =>
 options.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnection")));
 

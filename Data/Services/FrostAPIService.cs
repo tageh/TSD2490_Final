@@ -1,20 +1,17 @@
 ﻿#nullable disable
-using Gruppe11.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
-using System.Net.Http.Headers;
+using Gruppe11.Models;
 
-
-namespace Gruppe11.Models
+namespace Gruppe11.Data.Services
 {
-    public class FrostAPI
+    public class FrostAPIService
     {
-
         public List<Observasjon> observasjoner = new List<Observasjon>();
         string sisteUken = DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd");
 
-        public List<Observasjon> HentOvservasjoner(string bruker)
+        public async Task<List<Observasjon>> HentOvservasjoner()
         {
             var client = new RestClient($"https://frost.met.no/observations/v0.jsonld?sources=SN27160&referencetime=R7%2F{sisteUken}T6%2F{sisteUken}T6%2FP1D&elements=air_temperature");
 
@@ -23,24 +20,23 @@ namespace Gruppe11.Models
             request.AddHeader("UserAgent", "HttpClientFactory-Sample");
             request.AddHeader("Authorization", "Basic YmY5ZjUxYTMtMjZkMi00ZTZlLWFhYmYtMjVhNmU1MmJhYWE3OmQ5OTkyNWU1LTc5NDgtNDMwMy1iMGI2LThiZmFmMmNjZDU3NQ==");
 
-            var response = client.Execute(request);
+            var response = await client.ExecuteAsync(request);
 
             dynamic obj = JObject.Parse(response.Content);
-            string dataVerdi = "";
-            dataVerdi = obj.data.ToString();
+            //string dataVerdi = "";
+            string dataVerdi = obj.data.ToString();
 
             var deserializedDataValue = JsonConvert.DeserializeObject<List<Rootobject>>(dataVerdi);
 
+            observasjoner.Clear();
             foreach (var o in deserializedDataValue)
             {
                 var nyObservasjon = new Observasjon();
                 nyObservasjon.Dato = o.ReferenceTime;
                 nyObservasjon.Temperatur = o.Observations[0].Value;
-                nyObservasjon.Bruker = bruker;
                 observasjoner.Add(nyObservasjon);
-
+                //Console.WriteLine($"{nyObservasjon.Dato} {nyObservasjon.Temperatur}");
             }
-
             return observasjoner;
         }
     }
