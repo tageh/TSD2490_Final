@@ -8,7 +8,5 @@ namespace Gruppe11.Models
         public DateTime? FraDato { get; set; }
         [Required]
         public DateTime? TilDato { get; set; }
-
     }
 }
-

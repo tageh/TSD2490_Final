@@ -1,6 +1,4 @@
-﻿#nullable disable
-
-namespace Gruppe11.Models
+﻿namespace Gruppe11.Models
 {
     public class Observasjon
     {

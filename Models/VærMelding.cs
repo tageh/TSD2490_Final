@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Gruppe11.Models
 {
-    public partial class VærMelding
+    public class VærMelding
     {
         public int Id { get; set; }
         [Required]

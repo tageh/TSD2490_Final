@@ -10,8 +10,7 @@ namespace Gruppe11.Data
         {
         }
 
-        public Gruppe11Context(DbContextOptions<Gruppe11Context> options)
-            : base(options)
+        public Gruppe11Context(DbContextOptions<Gruppe11Context> options) : base(options)
         {
         }
 
@@ -32,6 +31,5 @@ namespace Gruppe11.Data
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
-
     }
 }

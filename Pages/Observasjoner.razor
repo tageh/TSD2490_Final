@@ -3,19 +3,19 @@
 @using Gruppe11.Models
 @using Newtonsoft.Json
 @using Newtonsoft.Json.Serialization;
+
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inherits OwningComponentBase<ObservasjonService>
 @inject FrostAPIService FrostAPIService
+@inherits OwningComponentBase<ObservasjonService>
 
 <h1>Observasjoner</h1>
 <hr />
-<!-- AuthorizeView allows us to only show sections of the page -->
-<!-- based on the security on the current user -->
+
 <AuthorizeView>
-    <!-- Show this section if the user is logged in -->
     <Authorized>
 
         <h3>Showing @antall records</h3>
+
         <_FiltrerObservasjoner Filtrere="FiltrerObservasjoner" />
 
         @if (lastetData == false)
@@ -27,7 +27,6 @@
         }
         else
         {
-            <!-- Show the forecasts for the current user -->
             <table class="table">
                 <thead>
                     <tr>
@@ -46,37 +45,38 @@
                 </tbody>
             </table>
         }
-
     </Authorized>
-    <!-- Show this section if the user is not logged in -->
     <NotAuthorized>
         <p>You're not signed in.</p>
     </NotAuthorized>
 </AuthorizeView>
+
 @code
 {
+    #nullable disable
     List<Observasjon> observasjoner = new List<Observasjon>();
     List<Observasjon> alleObservasjoner = new List<Observasjon>();
 
-    int antall = 0;
-    bool lastetData = false;
+    private int antall = 0;
+    private bool lastetData = false;
 
     protected override async Task OnInitializedAsync()
     {
-        observasjoner = await FrostAPIService.HentOvservasjoner();
+        observasjoner = await FrostAPIService.HentObservasjoner();
 
         await Service.CreateObservasjonerAsync(observasjoner);
 
         alleObservasjoner = await Service.GetObservasjonAsync();
 
         observasjoner = alleObservasjoner.OrderBy(o => o.Dato).TakeLast(7).ToList();
+
         tellAntall();
         lastetData = true;
     }
 
     public void FiltrerObservasjoner(DatoFilter datoFiler)
     {
-        observasjoner = alleObservasjoner.Where(o => o.Dato >= datoFiler.FraDato && o.Dato <= datoFiler.TilDato).ToList();
+        observasjoner = alleObservasjoner.Where(o => o.Dato >= datoFiler.FraDato && o.Dato.Value.Date <= datoFiler.TilDato).ToList();
         tellAntall();
     }
 

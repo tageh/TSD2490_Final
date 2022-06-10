@@ -10,8 +10,7 @@ namespace Gruppe11.Data
         {
         }
 
-        public ObservasjonContext(DbContextOptions<ObservasjonContext> options)
-            : base(options)
+        public ObservasjonContext(DbContextOptions<ObservasjonContext> options) : base(options)
         {
         }
 

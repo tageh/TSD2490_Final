@@ -9,11 +9,11 @@ namespace Gruppe11.Data.Services
     public class FrostAPIService
     {
         public List<Observasjon> observasjoner = new List<Observasjon>();
-        string sisteUken = DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd");
+        private readonly string sisteSyvDager = DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd");
 
-        public async Task<List<Observasjon>> HentOvservasjoner()
+        public async Task<List<Observasjon>> HentObservasjoner()
         {
-            var client = new RestClient($"https://frost.met.no/observations/v0.jsonld?sources=SN27160&referencetime=R7%2F{sisteUken}T6%2F{sisteUken}T6%2FP1D&elements=air_temperature");
+            var client = new RestClient($"https://frost.met.no/observations/v0.jsonld?sources=SN27160&referencetime=R7%2F{sisteSyvDager}T12%2F{sisteSyvDager}T12%2FP1D&elements=air_temperature");
 
             var request = new RestRequest("", Method.Get);
             request.AddHeader("Accept", "application/json");
@@ -22,20 +22,20 @@ namespace Gruppe11.Data.Services
 
             var response = await client.ExecuteAsync(request);
 
+            //Behandling av JSON-respons
             dynamic obj = JObject.Parse(response.Content);
-            //string dataVerdi = "";
             string dataVerdi = obj.data.ToString();
 
             var deserializedDataValue = JsonConvert.DeserializeObject<List<Rootobject>>(dataVerdi);
 
             observasjoner.Clear();
+
             foreach (var o in deserializedDataValue)
             {
                 var nyObservasjon = new Observasjon();
                 nyObservasjon.Dato = o.ReferenceTime;
                 nyObservasjon.Temperatur = o.Observations[0].Value;
                 observasjoner.Add(nyObservasjon);
-                //Console.WriteLine($"{nyObservasjon.Dato} {nyObservasjon.Temperatur}");
             }
             return observasjoner;
         }

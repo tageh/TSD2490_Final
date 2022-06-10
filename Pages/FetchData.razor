@@ -2,31 +2,31 @@
 @using Gruppe11.Data
 @using Gruppe11.Models
 @using Gruppe11.Data.Services
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inherits OwningComponentBase<WeatherForecastService>
+
 <h1>Weather forecast</h1>
 <hr />
-<!-- AuthorizeView allows us to only show sections of the page -->
-<!-- based on the security on the current user -->
+
 <AuthorizeView Context="AVcontext">
-    <!-- Show this section if the user is logged in -->
-    <Authorized >
+    <Authorized>
         <h3>Recorded by @AVcontext.User.Identity?.Name!</h3>
         <br />
         @if (forecasts == null)
         {
-            <!-- Show this if the current user has no data... yet... -->
-            <p><em>Loading...</em></p>
+            <div class="d-flex align-items-center">
+                <strong>Loading...</strong>
+                <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+            </div>
         }
         else
         {
-            <!-- Show the forecasts for the current user -->
             <table class="table">
                 <thead>
                     <tr>
                         <th>Dato</th>
-                        <th>Temp. (C)</th>
+                        <th>Temperatur (C)</th>
                         <th>Kommentar</th>
                         <th></th>
                     </tr>
@@ -39,10 +39,8 @@
                             <td>@forecast.Temperatur</td>
                             <td>@forecast.Kommentar</td>
                             <td>
-                                <!-- Edit the current forecast -->
-                                <button class="btn btn-primary"
-                                @onclick="(() => EditForecast(forecast))">
-                                Edit
+                                <button class="btn btn-primary" @onclick="(() => EditForecast(forecast))">
+                                    Edit
                                 </button>
                             </td>
                         </tr>
@@ -51,91 +49,85 @@
             </table>
 
             <p>
-            <!-- Add a new forecast -->
-            <button class="btn btn-success"
-                    @onclick="AddNewForecast">
+                <button class="btn btn-success" @onclick="AddNewForecast">
                     Add New Forecast
                 </button>
             </p>
+
             @if (ShowPopup)
             {
-                <!-- This is the popup to create or edit a forecast -->
                 <div class="modal" tabindex="-1" style="display:block" role="dialog">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h3 class="modal-title">@tittel</h3>
-                                <!-- Button to close the popup -->
                                 <button type="button" class="close" @onclick="ClosePopup">
                                     <span aria-hidden="true">X</span>
                                 </button>
                             </div>
-                            <!-- Edit form for the current forecast -->
                             <div class="modal-body">
                                 <EditForm Model="objWeatherForecast" Context="Editcontext" OnValidSubmit="SaveForecast">
-                                    <DataAnnotationsValidator/>
-                                        <div class="form-group">
-                                            <label for="Beskrivelse">Temperatur</label>
-                                                <div>
-                                                    <InputNumber class="form-control"  @bind-Value="objWeatherForecast.Temperatur" id="Temperatur"></InputNumber>
-                                                    <ValidationMessage For="@(()=>objWeatherForecast.Temperatur)" />
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                            <label for="Beskrivelse">Kommentar</label>
-                                                <div>
-                                                    <InputText class="form-control" @bind-Value="objWeatherForecast.Kommentar" id="Kommentar"></InputText>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                            <label for="Beskrivelse">Dato</label>
-                                                <div>
-                                                    <InputDate class="form-control" @bind-Value="objWeatherForecast.Dato" id="Dato"></InputDate>
-                                                    <ValidationMessage For="@(()=>objWeatherForecast.Dato)" />
-                                                </div>
-                                            </div>
-
-                                         <div class="p-1">
-                                        <button class="btn btn-success" type="submit"> Save </button>&nbsp;
+                                    <DataAnnotationsValidator />
+                                    <div class="form-group">
+                                        <label for="Tempratur">Temperatur</label>
+                                        <div>
+                                            <InputNumber class="form-control" @bind-Value="objWeatherForecast.Temperatur" id="Temperatur"></InputNumber>
+                                            <ValidationMessage For="@(()=>objWeatherForecast.Temperatur)" />
                                         </div>
-                                        <br />
-                                 </EditForm>
-                                
-                                
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="Kommentar">Kommentar</label>
+                                        <div>
+                                            <InputText class="form-control" @bind-Value="objWeatherForecast.Kommentar" id="Kommentar"></InputText>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="Dato">Dato</label>
+                                        <div>
+                                            <InputDate class="form-control" @bind-Value="objWeatherForecast.Dato" id="Dato"></InputDate>
+                                            <ValidationMessage For="@(()=>objWeatherForecast.Dato)" />
+                                        </div>
+                                    </div>
+                                    <div class="p-1">
+                                        <button class="btn btn-success" type="submit"> 
+                                            Save 
+                                        </button>&nbsp;
+                                    </div>
+                                </EditForm>
+
+                                <br />
+
                                 @if (objWeatherForecast.Id > 0)
-                                {                                    
-                                    <!-- Button to delete the forecast -->
-                                    <button type="submit" class="btn btn-danger"
-                                    @onclick="DeleteForecast">
-                                    Delete
-                                </button>
+                                {
+                                    <button type="submit" class="btn btn-danger" @onclick="DeleteForecast">
+                                        Delete
+                                    </button>
                                 }
-                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             }
         }
     </Authorized>
-    <!-- Show this section if the user is not logged in -->
     <NotAuthorized>
         <p>You're not signed in.</p>
     </NotAuthorized>
 </AuthorizeView>
-@code 
+
+@code
 {
-    // AuthenticationState is available as a CascadingParameter
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
-    
+
     List<VærMelding> forecasts = new List<VærMelding>();
 
     private string UserIdentityName = "";
-    string tittel = "";
+    private string tittel = "";
 
     protected override async Task OnInitializedAsync()
     {
-        // Get the current user
+        // Hent brukernavn 
         if (authenticationStateTask != null)
         {
             var user = (await authenticationStateTask).User;
@@ -144,66 +136,64 @@
                 UserIdentityName = user.Identity.Name ?? "";
             }
         }
-        // Get the forecasts for the current user
-        // We access WeatherForecastService using @Service
+
         forecasts = await @Service.GetForecastAsync(UserIdentityName);
     }
 
     VærMelding objWeatherForecast = new VærMelding();
     bool ShowPopup = false;
+
     void ClosePopup()
     {
-        // Close the Popup
         ShowPopup = false;
     }
+
     void AddNewForecast()
     {
-        // Make new forecast
-        objWeatherForecast = new VærMelding();
-        // Set Id to 0 so we know it is a new record
-        objWeatherForecast.Id = 0;
-        // Open the Popup
-        ShowPopup = true;
         tittel = "Add new Forcast";
+
+        objWeatherForecast = new VærMelding();
+        objWeatherForecast.Id = 0;
+        
+        ShowPopup = true;
     }
+
     async Task SaveForecast()
     {
-        // Close the Popup
         ShowPopup = false;
-        // A new forecast will have the Id set to 0 
+
         if (objWeatherForecast.Id == 0)
         {
-            // Create new forecast
+            // Legger inn værdata
             VærMelding objNewWeatherForecast = new VærMelding();
             objNewWeatherForecast.Dato = objWeatherForecast.Dato;
             objNewWeatherForecast.Kommentar = objWeatherForecast.Kommentar;
             objNewWeatherForecast.Temperatur = Convert.ToInt32(objWeatherForecast.Temperatur);
             objNewWeatherForecast.Bruker = UserIdentityName;
-            // Save the result
+
+            // Lagrer værdata
             var result = @Service.CreateForecastAsync(objNewWeatherForecast);
         }
         else
         {
             bool oppdatert = await @Service.UpdateForecastAsync(objWeatherForecast);
         }
-        // Get the forecasts for the current user
+
         forecasts = await @Service.GetForecastAsync(UserIdentityName);
     }
+
     void EditForecast(VærMelding værMelding)
     {
+        tittel = "Edit Forcast";
         objWeatherForecast = værMelding;
         ShowPopup = true;
-        tittel = "Edit Forcast";
     }
 
     async Task DeleteForecast()
     {
-        // Close the Popup
         ShowPopup = false;
-        // Delete the forecast
+
         var result = @Service.DeleteForecastAsync(objWeatherForecast);
-        // Get the forecasts for the current user
         forecasts = await @Service.GetForecastAsync(UserIdentityName);
     }
-
 }
